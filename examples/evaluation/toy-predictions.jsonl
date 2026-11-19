@@ -1,0 +1,5 @@
+{"case_id":"toy-vulnerable-hit","status":"completed","findings":[{"root_cause_id":"toy-missing-tenant-check","path":"toy/accounts.py","line":12,"evidence":"Invented fixture for scorer testing only; no Devin execution."}],"cost_usd":0.1,"duration_seconds":10}
+{"case_id":"toy-safe-false-alarm","status":"completed","findings":[{"root_cause_id":"toy-invented-sql-injection","path":"toy/search.py","line":18,"evidence":"Intentionally incorrect synthetic report for testing false-alarm accounting."}],"cost_usd":0.05,"duration_seconds":5}
+{"case_id":"toy-vulnerable-timeout","status":"incomplete","findings":[],"cost_usd":0.2,"duration_seconds":60}
+{"case_id":"toy-safe-clean","status":"completed","findings":[],"cost_usd":0.05,"duration_seconds":4}
+{"case_id":"toy-vulnerable-wrong-root","status":"completed","findings":[{"root_cause_id":"toy-wrong-diagnosis","path":"toy/files.py","line":25,"evidence":"Intentionally wrong root cause, not an actual vulnerability report."}],"cost_usd":0.1,"duration_seconds":8}

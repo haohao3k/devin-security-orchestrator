@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devin-security-orchestrator"
+version = "0.1.0"
+description = "Persistent, evidence-bound security investigations around Devin sessions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+  "httpx==0.28.1",
+  "jsonschema==4.26.0",
+  "fastapi==0.141.1",
+  "uvicorn==0.52.1",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]==3.3.9"]
+
+[project.scripts]
+devin-guard = "devin_guard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["devin_guard*"]

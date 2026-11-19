@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: guard
+          POSTGRES_PASSWORD: ci-test-only
+          POSTGRES_DB: guard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U guard -d guard_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TEST_POSTGRES_URL: postgresql://guard:ci-test-only@127.0.0.1:5432/guard_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install locked dependencies
+        run: python -m pip install --require-hashes -r requirements.lock
+      - name: Exercise SQLite and PostgreSQL state machines
+        run: python scripts/run_tests.py --require-postgres
+      - name: Run offline state-reuse demonstration
+        run: python -m devin_guard demo
+      - name: Exercise evaluation scorer on synthetic fixtures
+        run: >-
+          python -m devin_guard score
+          --labels examples/evaluation/toy-labels.jsonl
+          --predictions examples/evaluation/toy-predictions.jsonl

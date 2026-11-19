@@ -1,0 +1,10 @@
+[
+  {
+    "cwe": "CWE-79",
+    "path": "examples/toy_app.py",
+    "symbol": "render_name",
+    "source": "name argument",
+    "sink": "returned HTML",
+    "description": "Example hypothesis only: determine whether the name argument is escaped before entering returned HTML. This is not a confirmed finding."
+  }
+]

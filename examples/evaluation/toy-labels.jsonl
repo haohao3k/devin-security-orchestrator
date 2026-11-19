@@ -1,0 +1,6 @@
+{"case_id":"toy-vulnerable-hit","vulnerable":true,"root_cause_id":"toy-missing-tenant-check"}
+{"case_id":"toy-safe-false-alarm","vulnerable":false}
+{"case_id":"toy-vulnerable-timeout","vulnerable":true,"root_cause_id":"toy-untrusted-command"}
+{"case_id":"toy-safe-clean","vulnerable":false}
+{"case_id":"toy-vulnerable-wrong-root","vulnerable":true,"root_cause_id":"toy-path-boundary"}
+{"case_id":"toy-safe-missing-run","vulnerable":false}

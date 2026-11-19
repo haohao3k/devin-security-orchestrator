@@ -1,0 +1,6 @@
+{
+  "purpose": "Example only; replace with your actual runtime and dependency versions",
+  "runtime": "python:3.12",
+  "external_dependencies": [],
+  "configuration_revision": "demo-v1"
+}
