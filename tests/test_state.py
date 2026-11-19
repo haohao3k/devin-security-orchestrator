@@ -10,7 +10,7 @@ import time
 import unittest
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 from devin_guard.state import LeaseConflict, NotFoundError, StateError, StateStore, TransitionError
 
@@ -20,6 +20,31 @@ CANDIDATE = {
     "source": "request.query", "sink": "db.execute", "description": "Review parameterization",
 }
 CONTEXT = {"tree_sha": "a" * 40, "environment_digest": "b" * 64, "policy_version": "policy-v1"}
+
+
+def postgres_schema_url(database_url: str, schema: str) -> str:
+    parts = urlsplit(database_url)
+    query = [(key, value) for key, value in parse_qsl(parts.query) if key != "options"]
+    query.append(("options", "-c search_path=" + schema))
+    # libpq URIs use percent escapes, not HTML form encoding: a literal '+' is
+    # not decoded into a space and would become the option '+search_path'.
+    return urlunsplit((parts.scheme, parts.netloc, parts.path,
+                       urlencode(query, quote_via=quote), parts.fragment))
+
+
+class PostgreSQLURLTests(unittest.TestCase):
+    def test_schema_options_are_decoded_correctly_by_libpq_without_a_server(self):
+        try:
+            from psycopg.conninfo import conninfo_to_dict
+        except ImportError:
+            self.skipTest("install psycopg to exercise its real libpq URI parser")
+        url = postgres_schema_url(
+            "postgresql://tester:placeholder@localhost/testdb?connect_timeout=3&options=obsolete",
+            "guard_test_regression",
+        )
+        params = conninfo_to_dict(url)
+        self.assertEqual(params["options"], "-c search_path=guard_test_regression")
+        self.assertEqual(params["connect_timeout"], "3")
 
 
 class StoreBehavior:
@@ -311,10 +336,7 @@ class PostgreSQLStateTests(StoreBehavior, unittest.TestCase):
         self.admin = psycopg.connect(os.environ["TEST_POSTGRES_URL"], autocommit=True)
         self.schema = "guard_test_" + uuid.uuid4().hex
         self.admin.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(self.schema)))
-        parts = urlsplit(os.environ["TEST_POSTGRES_URL"])
-        query = [(key, value) for key, value in parse_qsl(parts.query) if key != "options"]
-        query.append(("options", "-c search_path=" + self.schema))
-        self.url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+        self.url = postgres_schema_url(os.environ["TEST_POSTGRES_URL"], self.schema)
         self.store = StateStore(self.url)
         self.store.initialize()
 
